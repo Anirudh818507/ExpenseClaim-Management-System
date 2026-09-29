@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employees - ExpenseClaim</title>
+  <meta name="description" content="Employee management - create, view, edit, and delete employees">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-brand">
+      <div class="brand-icon">EC</div>
+      <div class="brand-text-wrap">
+        <span class="brand-title">ExpenseClaim</span>
+        <span class="brand-sub">Management System</span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="/pages/dashboard.html">
+        <span class="nav-icon">&#9632;</span>
+        <span class="nav-item-label">Dashboard</span>
+      </a>
+      <a class="nav-item" href="/pages/employees.html">
+        <span class="nav-icon">&#9633;</span>
+        <span class="nav-item-label">Employees</span>
+      </a>
+      <a class="nav-item" href="/pages/claims.html">
+        <span class="nav-icon">&#9644;</span>
+        <span class="nav-item-label">Claims</span>
+      </a>
+      <a class="nav-item" href="/pages/expense-items.html">
+        <span class="nav-icon">&#9646;</span>
+        <span class="nav-item-label">Expense Items</span>
+      </a>
+      <a class="nav-item" href="/pages/approvals.html">
+        <span class="nav-icon">&#10003;</span>
+        <span class="nav-item-label">Approvals</span>
+      </a>
+    </div>
+    <div class="sidebar-foot">v1.0 &mdash; ExpenseClaim</div>
+  </nav>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+        </button>
+        <div class="topbar-titles">
+          <div class="topbar-title">Employees</div>
+          <div class="topbar-sub" id="emp-count">Loading...</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="openAddEmployeeModal()" id="btn-add-emp">+ Add Employee</button>
+        <div class="topbar-chip">
+          <div class="avatar">A</div>
+          <span>Admin</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <i class="search-icon">S</i>
+          <input class="search-input" id="emp-search" type="text"
+                 placeholder="Search by name, email or department..."
+                 oninput="filterEmployees()" autocomplete="off">
+        </div>
+        <div class="filter-tabs" id="role-tabs">
+          <button class="filter-tab active" onclick="setRoleFilter(this,'ALL')">All</button>
+          <button class="filter-tab" onclick="setRoleFilter(this,'EMPLOYEE')">Employee</button>
+          <button class="filter-tab" onclick="setRoleFilter(this,'MANAGER')">Manager</button>
+          <button class="filter-tab" onclick="setRoleFilter(this,'ADMIN')">Admin</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="table-wrap">
+          <table class="data-table" style="min-width:640px">
+            <thead>
+              <tr>
+                <th style="width:60px">ID</th>
+                <th>Name / Email</th>
+                <th>Department</th>
+                <th>Role</th>
+                <th>Manager ID</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="emp-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD / EDIT EMPLOYEE MODAL -->
+<div class="modal-overlay" id="emp-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="emp-modal-title">Add Employee</span>
+      <button class="modal-close" onclick="closeModal('emp-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <form id="emp-form" onsubmit="return false">
+        <input type="hidden" id="emp-id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" for="emp-name">Full Name *</label>
+            <input class="form-input" id="emp-name" type="text" placeholder="e.g. John Smith" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="emp-email">Email Address *</label>
+            <input class="form-input" id="emp-email" type="email" placeholder="e.g. john@company.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="emp-dept">Department *</label>
+            <input class="form-input" id="emp-dept" type="text" placeholder="e.g. Finance, HR, IT" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="emp-role">Role *</label>
+            <select class="form-select" id="emp-role">
+              <option value="EMPLOYEE">Employee</option>
+              <option value="MANAGER">Manager</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="emp-mgr">Manager (select from employees)</label>
+            <select class="form-select" id="emp-mgr">
+              <option value="">-- No Manager --</option>
+            </select>
+            <span class="form-hint">Leave blank if this employee has no manager.</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('emp-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEmployee()" id="emp-save-btn">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW EMPLOYEE MODAL -->
+<div class="modal-overlay" id="emp-view-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Employee Details</span>
+      <button class="modal-close" onclick="closeModal('emp-view-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="emp-view-body">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('emp-view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/pages/employees.js"></script>
+</body>
+</html>

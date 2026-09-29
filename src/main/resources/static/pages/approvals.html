@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approvals - ExpenseClaim</title>
+  <meta name="description" content="Approval step management - approve and reject expense claims">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-brand">
+      <div class="brand-icon">EC</div>
+      <div class="brand-text-wrap">
+        <span class="brand-title">ExpenseClaim</span>
+        <span class="brand-sub">Management System</span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="/pages/dashboard.html"><span class="nav-icon">&#9632;</span><span class="nav-item-label">Dashboard</span></a>
+      <a class="nav-item" href="/pages/employees.html"><span class="nav-icon">&#9633;</span><span class="nav-item-label">Employees</span></a>
+      <a class="nav-item" href="/pages/claims.html"><span class="nav-icon">&#9644;</span><span class="nav-item-label">Claims</span></a>
+      <a class="nav-item" href="/pages/expense-items.html"><span class="nav-icon">&#9646;</span><span class="nav-item-label">Expense Items</span></a>
+      <a class="nav-item" href="/pages/approvals.html"><span class="nav-icon">&#10003;</span><span class="nav-item-label">Approvals</span></a>
+    </div>
+    <div class="sidebar-foot">v1.0 &mdash; ExpenseClaim</div>
+  </nav>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">
+          <span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span>
+        </button>
+        <div class="topbar-titles">
+          <div class="topbar-title">Approvals</div>
+          <div class="topbar-sub" id="appr-count">Loading...</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="openAddApprovalModal()">+ Add Approval Step</button>
+        <div class="topbar-chip"><div class="avatar">A</div><span>Admin</span></div>
+      </div>
+    </header>
+
+    <main class="page-content">
+
+      <!-- Summary Cards -->
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-icon amber">PND</div>
+          <div>
+            <div class="stat-number" id="appr-pending">--</div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">APR</div>
+          <div>
+            <div class="stat-number" id="appr-approved">--</div>
+            <div class="stat-label">Approved</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">REJ</div>
+          <div>
+            <div class="stat-number" id="appr-rejected">--</div>
+            <div class="stat-label">Rejected</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-wrap">
+          <i class="search-icon">S</i>
+          <input class="search-input" id="appr-search" type="text"
+                 placeholder="Search by claim, employee or manager..." oninput="filterApprovals()">
+        </div>
+        <div class="filter-tabs" id="appr-tabs">
+          <button class="filter-tab active" onclick="setApprFilter(this,'ALL')">All</button>
+          <button class="filter-tab" onclick="setApprFilter(this,'PENDING')">Pending</button>
+          <button class="filter-tab" onclick="setApprFilter(this,'APPROVED')">Approved</button>
+          <button class="filter-tab" onclick="setApprFilter(this,'REJECTED')">Rejected</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="table-wrap">
+          <table class="data-table" style="min-width:780px">
+            <thead>
+              <tr>
+                <th style="width:55px">ID</th>
+                <th>Claim</th>
+                <th>Employee</th>
+                <th>Manager</th>
+                <th>Claim Status</th>
+                <th>Approval Status</th>
+                <th style="max-width:160px">Remarks</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="appr-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD / EDIT APPROVAL STEP MODAL -->
+<div class="modal-overlay" id="appr-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="appr-modal-title">Add Approval Step</span>
+      <button class="modal-close" onclick="closeModal('appr-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <form id="appr-form" onsubmit="return false">
+        <input type="hidden" id="appr-id">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label" for="appr-claim">Claim *</label>
+            <select class="form-select" id="appr-claim" required>
+              <option value="">-- Select Claim --</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="appr-manager">Manager *</label>
+            <select class="form-select" id="appr-manager" required>
+              <option value="">-- Select Manager --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="appr-status">Status</label>
+            <select class="form-select" id="appr-status">
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="appr-remarks">Remarks</label>
+            <input class="form-input" id="appr-remarks" type="text" placeholder="Optional remarks...">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('appr-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveApproval()" id="appr-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW APPROVAL MODAL -->
+<div class="modal-overlay" id="appr-view-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Approval Step Details</span>
+      <button class="modal-close" onclick="closeModal('appr-view-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="appr-view-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('appr-view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK REJECT WITH REMARKS MODAL -->
+<div class="modal-overlay" id="quick-reject-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">Reject Approval Step</span>
+      <button class="modal-close" onclick="closeModal('quick-reject-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="quick-reject-id">
+      <div class="form-group">
+        <label class="form-label" for="quick-reject-remarks">Reason for Rejection</label>
+        <textarea class="form-textarea" id="quick-reject-remarks" rows="3"
+                  placeholder="Enter rejection reason..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('quick-reject-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmQuickReject()">Reject</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/pages/approvals.js"></script>
+</body>
+</html>

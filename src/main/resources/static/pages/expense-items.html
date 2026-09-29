@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Items - ExpenseClaim</title>
+  <meta name="description" content="Expense item management - line items for expense claims">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-brand">
+      <div class="brand-icon">EC</div>
+      <div class="brand-text-wrap">
+        <span class="brand-title">ExpenseClaim</span>
+        <span class="brand-sub">Management System</span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="/pages/dashboard.html"><span class="nav-icon">&#9632;</span><span class="nav-item-label">Dashboard</span></a>
+      <a class="nav-item" href="/pages/employees.html"><span class="nav-icon">&#9633;</span><span class="nav-item-label">Employees</span></a>
+      <a class="nav-item" href="/pages/claims.html"><span class="nav-icon">&#9644;</span><span class="nav-item-label">Claims</span></a>
+      <a class="nav-item" href="/pages/expense-items.html"><span class="nav-icon">&#9646;</span><span class="nav-item-label">Expense Items</span></a>
+      <a class="nav-item" href="/pages/approvals.html"><span class="nav-icon">&#10003;</span><span class="nav-item-label">Approvals</span></a>
+    </div>
+    <div class="sidebar-foot">v1.0 &mdash; ExpenseClaim</div>
+  </nav>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">
+          <span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span>
+        </button>
+        <div class="topbar-titles">
+          <div class="topbar-title">Expense Items</div>
+          <div class="topbar-sub" id="items-count">Loading...</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="openAddItemModal()">+ Add Expense Item</button>
+        <div class="topbar-chip"><div class="avatar">A</div><span>Admin</span></div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <i class="search-icon">S</i>
+          <input class="search-input" id="item-search" type="text"
+                 placeholder="Search by category or description..." oninput="filterItems()">
+        </div>
+        <div class="filter-tabs" id="cat-tabs">
+          <button class="filter-tab active" onclick="setCatFilter(this,'ALL')">All</button>
+          <button class="filter-tab" onclick="setCatFilter(this,'Travel')">Travel</button>
+          <button class="filter-tab" onclick="setCatFilter(this,'Meals')">Meals</button>
+          <button class="filter-tab" onclick="setCatFilter(this,'Accommodation')">Accommodation</button>
+          <button class="filter-tab" onclick="setCatFilter(this,'Office')">Office</button>
+          <button class="filter-tab" onclick="setCatFilter(this,'Other')">Other</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="data-table" style="min-width:680px">
+            <thead>
+              <tr>
+                <th style="width:60px">ID</th>
+                <th>Claim</th>
+                <th>Employee</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD / EDIT EXPENSE ITEM MODAL -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="item-modal-title">Add Expense Item</span>
+      <button class="modal-close" onclick="closeModal('item-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <form id="item-form" onsubmit="return false">
+        <input type="hidden" id="item-id">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label" for="item-claim">Claim *</label>
+            <select class="form-select" id="item-claim" required>
+              <option value="">-- Select Claim --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="item-category">Category *</label>
+            <select class="form-select" id="item-category" required>
+              <option value="Travel">Travel</option>
+              <option value="Meals">Meals</option>
+              <option value="Accommodation">Accommodation</option>
+              <option value="Office">Office</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="item-amount">Amount (INR) *</label>
+            <input class="form-input" id="item-amount" type="number" min="0" step="0.01" placeholder="e.g. 1500" required>
+          </div>
+          <div class="form-group full">
+            <label class="form-label" for="item-desc">Description</label>
+            <textarea class="form-textarea" id="item-desc" rows="2" placeholder="Brief description of this expense..."></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('item-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()" id="item-save-btn">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/pages/expense-items.js"></script>
+</body>
+</html>

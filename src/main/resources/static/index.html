@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExpenseClaim - Management System</title>
+  <meta name="description" content="ExpenseClaim - Employee Expense Management System">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 20px; }
+    .splash-page { text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="splash-page">
+    <div class="splash-logo">EC</div>
+    <div class="splash-title">ExpenseClaim</div>
+    <div class="splash-sub">Employee Expense Management System</div>
+    <div class="splash-loader"></div>
+    <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Redirecting to Dashboard...</p>
+  </div>
+
+  <script>
+    setTimeout(function() {
+      window.location.replace('/pages/dashboard.html');
+    }, 1800);
+  </script>
+</body>
+</html>

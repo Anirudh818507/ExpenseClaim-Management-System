@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claims - ExpenseClaim</title>
+  <meta name="description" content="Expense claim management - create, review, approve and reject claims">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-brand">
+      <div class="brand-icon">EC</div>
+      <div class="brand-text-wrap">
+        <span class="brand-title">ExpenseClaim</span>
+        <span class="brand-sub">Management System</span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      <a class="nav-item" href="/pages/dashboard.html"><span class="nav-icon">&#9632;</span><span class="nav-item-label">Dashboard</span></a>
+      <a class="nav-item" href="/pages/employees.html"><span class="nav-icon">&#9633;</span><span class="nav-item-label">Employees</span></a>
+      <a class="nav-item" href="/pages/claims.html"><span class="nav-icon">&#9644;</span><span class="nav-item-label">Claims</span></a>
+      <a class="nav-item" href="/pages/expense-items.html"><span class="nav-icon">&#9646;</span><span class="nav-item-label">Expense Items</span></a>
+      <a class="nav-item" href="/pages/approvals.html"><span class="nav-icon">&#10003;</span><span class="nav-item-label">Approvals</span></a>
+    </div>
+    <div class="sidebar-foot">v1.0 &mdash; ExpenseClaim</div>
+  </nav>
+
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="toggleMobileSidebar()" aria-label="Toggle navigation">
+          <span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span>
+        </button>
+        <div class="topbar-titles">
+          <div class="topbar-title">Claims</div>
+          <div class="topbar-sub" id="claims-count">Loading...</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" onclick="openAddClaimModal()">+ New Claim</button>
+        <div class="topbar-chip"><div class="avatar">A</div><span>Admin</span></div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <i class="search-icon">S</i>
+          <input class="search-input" id="claim-search" type="text"
+                 placeholder="Search by employee name or department..." oninput="filterClaims()">
+        </div>
+        <div class="filter-tabs" id="status-tabs">
+          <button class="filter-tab active" onclick="setStatusFilter(this,'ALL')">All</button>
+          <button class="filter-tab" onclick="setStatusFilter(this,'PENDING')">Pending</button>
+          <button class="filter-tab" onclick="setStatusFilter(this,'APPROVED')">Approved</button>
+          <button class="filter-tab" onclick="setStatusFilter(this,'REJECTED')">Rejected</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table class="data-table" style="min-width:700px">
+            <thead>
+              <tr>
+                <th style="width:60px">ID</th>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="claims-tbody">
+              <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD/EDIT CLAIM MODAL -->
+<div class="modal-overlay" id="claim-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="claim-modal-title">New Claim</span>
+      <button class="modal-close" onclick="closeModal('claim-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <form id="claim-form" onsubmit="return false">
+        <input type="hidden" id="claim-id">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label" for="claim-emp">Employee *</label>
+            <select class="form-select" id="claim-emp" required>
+              <option value="">-- Select Employee --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="claim-amount">Total Amount (INR) *</label>
+            <input class="form-input" id="claim-amount" type="number" min="0" step="0.01" placeholder="e.g. 5000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="claim-status">Status</label>
+            <select class="form-select" id="claim-status">
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('claim-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClaim()" id="claim-save-btn">Save Claim</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW CLAIM MODAL -->
+<div class="modal-overlay" id="claim-view-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">Claim Details</span>
+      <button class="modal-close" onclick="closeModal('claim-view-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body" id="claim-view-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('claim-view-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- REJECT WITH REMARKS MODAL -->
+<div class="modal-overlay" id="reject-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title">Reject Claim</span>
+      <button class="modal-close" onclick="closeModal('reject-modal')" aria-label="Close">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="reject-claim-id">
+      <div class="form-group">
+        <label class="form-label" for="reject-remarks">Reason for Rejection (optional)</label>
+        <textarea class="form-textarea" id="reject-remarks" rows="3"
+                  placeholder="Enter reason for rejection..."></textarea>
+      </div>
+      <div style="background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:var(--r-md);padding:10px 12px;margin-top:8px;font-size:12px;color:var(--accent-red)">
+        Note: Reject requires a PENDING approval step to exist for this claim.
+        Create one on the Approvals page first if needed.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('reject-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmReject()">Reject Claim</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/pages/claims.js"></script>
+</body>
+</html>
